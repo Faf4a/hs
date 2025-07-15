@@ -2,12 +2,19 @@
 set -e
 
 # Clone the repository if .git doesn't exist and required variables are set
-if [[ ! -d .git && -n "${USERNAME}" && -n "${ACCESS_TOKEN}" && -n "${GIT_ADDRESS}" ]]; then
+if [[ ! -d .git && -n "${USERNAME}" && -n "${GIT_ADDRESS}" ]]; then
     REPO_NAME=$(basename -s .git "${GIT_ADDRESS}")
     CLONE_DIR="${USERNAME}_${REPO_NAME}"
 
     rm -rf "${CLONE_DIR}"
-    git clone -b "${BRANCH}" "https://${USERNAME}:${ACCESS_TOKEN}@${GIT_ADDRESS#https://}" "${CLONE_DIR}"
+
+    if [[ -n "${ACCESS_TOKEN}" ]]; then
+        # Clone with access token
+        git clone -b "${BRANCH}" "https://${USERNAME}:${ACCESS_TOKEN}@${GIT_ADDRESS#https://}" "${CLONE_DIR}"
+    else
+        # Clone without access token
+        git clone -b "${BRANCH}" "https://${USERNAME}@${GIT_ADDRESS#https://}" "${CLONE_DIR}"
+    fi
 
     # Move all files (including hidden ones) from clone dir to current directory
     shopt -s dotglob nullglob
